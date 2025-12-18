@@ -1,0 +1,42 @@
+{
+  "name": "i18n-batch-processor",
+  "version": "1.0.0",
+  "description": "批量国际化处理脚本 - 自动提取和转换中文文本为vue-i18n调用",
+  "main": "batch-i18n-processor.js",
+  "bin": {
+    "i18n-batch": "./batch-i18n-processor.js",
+    "i18n-merge": "./merge-i18n-json.js"
+  },
+  "scripts": {
+    "i18n-batch": "node batch-i18n-processor.js",
+    "i18n-merge": "node merge-i18n-json.js",
+    "merge": "node merge-i18n-json.js"
+  },
+  "keywords": [
+    "i18n",
+    "vue-i18n",
+    "internationalization",
+    "chinese",
+    "batch-processing",
+    "automation"
+  ],
+  "author": "xushiyu",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "homepage": ".",
+  "files": [
+    "batch-i18n-processor.js",
+    "merge-i18n-json.js",
+    "i18n.config.js",
+    "README.md",
+    "使用指南.md"
+  ]
+}
