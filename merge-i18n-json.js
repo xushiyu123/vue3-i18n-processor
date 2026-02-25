@@ -4,18 +4,21 @@
  * 合并国际化 JSON 词条脚本
  * 使用方法: node merge-i18n-json.js [options]
  *
+ * 说明:
+ *   默认会从 i18n.config.js 配置文件中读取 outputPath 作为输入目录
+ *
  * 选项:
- *   --input <path>: JSON 文件所在目录（默认: ./）
+ *   --input <path>: JSON 文件所在目录（默认: 从配置文件读取 outputPath）
  *   --output <path>: 合并后的输出文件路径（默认: ./merged-i18n.json）
- *   --pattern <glob>: 文件匹配模式（默认: i18n-mapping*.json）
+ *   --pattern <glob>: 文件匹配模式（默认: *.json，匹配所有 JSON 文件）
  *   --overwrite: 如果遇到重复的 key，后面的值覆盖前面的（默认: false，不覆盖会警告）
  *   --sort: 按 key 排序输出（默认: false）
  *
  * 示例:
  *   node merge-i18n-json.js
- *   node merge-i18n-json.js --input ./locales --output ./locales/zh-CN.json
- *   node merge-i18n-json.js --pattern "i18n-*.json" --sort
- *   node merge-i18n-json.js --input ./locales --overwrite --sort
+ *   node merge-i18n-json.js --output ./locales/zh-CN.json
+ *   node merge-i18n-json.js --pattern "*.json" --sort
+ *   node merge-i18n-json.js --input ./custom-path --overwrite --sort
  */
 
 const fs = require('fs');
@@ -27,11 +30,27 @@ const writeFile = promisify(fs.writeFile);
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 
+// 加载用户配置文件
+let userConfig = {
+  outputPath: './i18n-mapping',
+};
+
+const configPath = path.join(__dirname, 'i18n.config.js');
+if (fs.existsSync(configPath)) {
+  try {
+    const loadedConfig = require(configPath);
+    userConfig = { ...userConfig, ...loadedConfig };
+    console.log('✓ 已加载配置文件: i18n.config.js\n');
+  } catch (error) {
+    console.warn('⚠ 加载配置文件失败，使用默认配置:', error.message);
+  }
+}
+
 // 默认配置
 const defaultConfig = {
-  inputDir: './',
+  inputDir: userConfig.outputPath || './i18n-mapping',
   outputFile: './merged-i18n.json',
-  pattern: 'i18n-mapping*.json',
+  pattern: '*.json',
   overwrite: false,
   sort: false,
 };
@@ -45,19 +64,22 @@ function parseArgs() {
     console.log(`
 使用方法: node merge-i18n-json.js [options]
 
+说明:
+  默认会从 i18n.config.js 配置文件中读取 outputPath 作为输入目录
+
 选项:
-  --input <path>: JSON 文件所在目录（默认: ./）
+  --input <path>: JSON 文件所在目录（默认: 从配置文件读取 outputPath）
   --output <path>: 合并后的输出文件路径（默认: ./merged-i18n.json）
-  --pattern <glob>: 文件匹配模式（默认: i18n-mapping*.json）
+  --pattern <glob>: 文件匹配模式（默认: *.json，匹配所有 JSON 文件）
   --overwrite: 如果遇到重复的 key，后面的值覆盖前面的（默认: false）
   --sort: 按 key 排序输出（默认: false）
   --help, -h: 显示帮助信息
 
 示例:
   node merge-i18n-json.js
-  node merge-i18n-json.js --input ./locales --output ./locales/zh-CN.json
-  node merge-i18n-json.js --pattern "i18n-*.json" --sort
-  node merge-i18n-json.js --input ./locales --overwrite --sort
+  node merge-i18n-json.js --output ./locales/zh-CN.json
+  node merge-i18n-json.js --pattern "*.json" --sort
+  node merge-i18n-json.js --input ./custom-path --overwrite --sort
 `);
     process.exit(0);
   }
@@ -94,10 +116,7 @@ function parseArgs() {
  * 简单的 glob 匹配
  */
 function matchPattern(filename, pattern) {
-  const regexPattern = pattern
-    .replace(/\./g, '\\.')
-    .replace(/\*/g, '.*')
-    .replace(/\?/g, '.');
+  const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*').replace(/\?/g, '.');
   const regex = new RegExp(`^${regexPattern}$`);
   return regex.test(filename);
 }
@@ -178,7 +197,8 @@ async function main() {
     const config = parseArgs();
     console.log('🚀 开始合并国际化 JSON 文件...\n');
     console.log('配置:', {
-      输入目录: config.inputDir,
+      输入目录:
+        config.inputDir + (config.inputDir === defaultConfig.inputDir ? ' (从配置文件)' : ''),
       输出文件: config.outputFile,
       文件模式: config.pattern,
       覆盖模式: config.overwrite ? '是' : '否',
@@ -186,8 +206,16 @@ async function main() {
     });
     console.log('');
     // 检查输入目录是否存在
-    if (!fs.existsSync(config.inputDir)) {
+    const inputDirResolved = path.resolve(config.inputDir);
+    if (!fs.existsSync(inputDirResolved)) {
       console.error(`❌ 错误: 输入目录 ${config.inputDir} 不存在`);
+      console.error(`   提示: 请检查 i18n.config.js 中的 outputPath 配置是否正确`);
+      process.exit(1);
+    }
+    // 检查输入路径是否是目录
+    const inputStat = fs.statSync(inputDirResolved);
+    if (!inputStat.isDirectory()) {
+      console.error(`❌ 错误: ${config.inputDir} 不是一个目录`);
       process.exit(1);
     }
     // 获取所有匹配的 JSON 文件
@@ -271,4 +299,3 @@ module.exports = {
   getMatchingFiles,
   readJsonFile,
 };
-

@@ -6,7 +6,7 @@ module.exports = {
    * 翻译词条 JSON 文件的存放路径
    * 默认为 ./i18n-mapping.json
    */
-  outputFile: './i18n-mapping.json',
+  outputPath: './i18n-mapping',
 
   /**
    * 忽略的文件夹路径（支持 * 通配符）
@@ -15,12 +15,18 @@ module.exports = {
   ignorePaths: [
     'node_modules',
     'dist',
+    'public',
     '.git',
     '*.d.ts',
     '*.spec.ts',
     '*.test.ts',
     'test',
     'tests',
+    'i18n',
+    'useTranslation.ts',
+    'area.ts',
+    'areacode.ts',
+    'timezone.ts',
   ],
 
   /**
@@ -47,7 +53,7 @@ module.exports = {
      */
     i18nMethod: {
       template: '$t', // template 中使用 $t
-      script: 't',    // script 中使用 t
+      script: 't', // script 中使用 t
     },
   },
 
@@ -81,4 +87,3 @@ module.exports = {
     i18nMethod: 'i18n.global.t',
   },
 };
-

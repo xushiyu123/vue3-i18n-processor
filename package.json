@@ -10,7 +10,7 @@
   "scripts": {
     "i18n-batch": "node batch-i18n-processor.js",
     "i18n-merge": "node merge-i18n-json.js",
-    "merge": "node merge-i18n-json.js"
+    "i18n-check": "node check-i18n-json.js"
   },
   "keywords": [
     "i18n",

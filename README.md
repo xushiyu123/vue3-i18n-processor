@@ -138,7 +138,6 @@ return i18n.t('用户名不能为空');
 module.exports = {
   // 翻译词条 JSON 文件的存放路径
   outputFile: './i18n-mapping.json',
-
   // 忽略的文件夹路径（支持 * 通配符）
   ignorePaths: [
     'node_modules',
